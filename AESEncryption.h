@@ -4,11 +4,22 @@
 #include <stdbool.h>
 #include <string.h>
 
-typedef unsigned char EncBlock[16];
+#define xtime(x) ((x << 1) ^ (((x >> 7) & 1) * 0x1b))
+#define Multiply(x,y) (((y & 1) * x) ^ ((y>>1 & 1) * xtime(x)) ^ ((y>>2 & 1) * xtime(xtime(x))) ^ ((y>>3 & 1) * xtime(xtime(xtime(x)))) ^ ((y>>4 & 1) * xtime(xtime(xtime(xtime(x))))))
+#define Nb 4 /* Block Length */
+#define Nk 8 /* Key Length for AES-256 (32 bytes) */
+#define Nr 14 /* Round Number for AES-256 */
+#define BaseLen 16
+#define EncLen 32
+#define RoundLen 240
+
+typedef unsigned char EncBlock[BaseLen];
+typedef unsigned char AES128Key[BaseLen];
+typedef unsigned char AES256Key[EncLen];
 
 /* AES 암/복호화 과정에서 사용하는 Key에 사용될 값 저장하는 배열 */
 /* 16byte Array를 하나의 암호화/복호화를 수행하는 Block으로 구분. Key도 32byte Key를 허용하지 않고 16byte로 변경 */
-EncBlock defaultkey = { 0x53  ,0x44  ,0x42  ,0x49  ,0x4F  ,0x53  ,0x45  ,0x4E  ,0x53  ,0x4F  ,0x52  ,0x45  ,0x4E  ,0x43  ,0x50  ,0x54 };
+AES128Key defaultkey = {0x73, 0x64, 0x62, 0x69, 0x6f, 0x73, 0x65, 0x6e, 0x73, 0x6f, 0x72, 0x63, 0x67, 0x6D, 0x73, 0x31};
 // unsigned char key[32] = { 0x00  ,0x01  ,0x02  ,0x03  ,0x04  ,0x05  ,0x06  ,0x07  ,0x08  ,0x09  ,0x0a  ,0x0b  ,0x0c  ,0x0d  ,0x0e  ,0x0f };
  
 /* 암호화시 사용하는 256가지의 모든 가능한 8Bit 값의 순열을 포함하고 있는 16 x 16 크기의 Byte Array이다. */
@@ -74,11 +85,12 @@ static const unsigned char Rcon[256] =
     0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d
 };
 
-#define xtime(x) ((x << 1) ^ (((x >> 7) & 1) * 0x1b)) /* 상태 배열의 각 열을 GF(2^8) 상에서의 다항식들로 고정된 다항식와 곱셈 수행하는 매크로 */
-#define Multiply(x,y) (((y & 1) * x) ^ ((y>>1 & 1) * xtime(x)) ^ ((y>>2 & 1) * xtime(xtime(x))) ^ ((y>>3 & 1) * xtime(xtime(xtime(x)))) ^ ((y>>4 & 1) * xtime(xtime(xtime(xtime(x))))))
-#define Nb 4 /* Block Length */
-#define Nk 4 /* Key Length */
-#define Nr 10 /* Round Number */
+// #define xtime(x) ((x << 1) ^ (((x >> 7) & 1) * 0x1b)) /* 상태 배열의 각 열을 GF(2^8) 상에서의 다항식들로 고정된 다항식와 곱셈 수행하는 매크로 */
+// #define Multiply(x,y) (((y & 1) * x) ^ ((y>>1 & 1) * xtime(x)) ^ ((y>>2 & 1) * xtime(xtime(x))) ^ ((y>>3 & 1) * xtime(xtime(xtime(x)))) ^ ((y>>4 & 1) * xtime(xtime(xtime(xtime(x))))))
+// #define Nb 4 /* Block Length */
+// #define Nk 4 /* Key Length */
+// #define Nr 10 /* Round Number */
+
 
 void SubBytes( unsigned char (*state)[4] );
 void InvSubBytes( unsigned char (*state)[4] );
@@ -92,7 +104,8 @@ int Implement_Cipher(unsigned char* RoundKey, unsigned char * in, unsigned char 
 void Encrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out);
 void Decrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out);
 void PINtoByte(int pin, unsigned char pinchar[]);
-void CreateAcccessKeyAsString( unsigned char*  appUuid, unsigned char*  authUuid, unsigned char*  deviceUuid, unsigned char* out ); 
+void CreateAcccessKey16AsString( unsigned char*  appUuid, unsigned char*  authUuid, unsigned char*  deviceUuid, unsigned char* out ); 
+void CreateAcccessKey32AsString( unsigned char*  appUuid, unsigned char*  authUuid, unsigned char*  deviceUuid, unsigned char* out ); 
 
 
 #endif

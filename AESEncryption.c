@@ -266,7 +266,7 @@ void Encrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out){
     int LRewindCnt=0;
     int ibuf;
     
-    while ((in[LLen] != 0) && (in[LLen+1] != 0)){ LLen++; } //0이 연속적으로 나온다면 종료된 문자열
+    while ((in[LLen] != 0) && (in[LLen+1] != 0)){ LLen++; } //0이 연속적으로 나온다면 종료된 문자열. 이것도 크기 받아서 조정할 수 있지 않을까? 아니면 ciper에서 문제가 생기니 여기서 이렇게 거르는게 맞을까?
     if(in[LLen] != 0){LLen++;}                              //(in[LLen+1] != 0) 조건으로 인해 줄어든 문자열 크기 보정.
     if((LLen % 16) == 0){LRewindCnt = trunc(LLen/16); } else { LRewindCnt = trunc(LLen/16)+1; } 
     // unsigned char LOut[LRewindCnt*16]={0,};
@@ -323,58 +323,67 @@ void PINtoByte(int pin, unsigned char pinchar[]){
 }
 
 
-void CreateAcccessKeyAsString(unsigned char* appUuid, unsigned char* authUuid, unsigned char* deviceUuid, unsigned char* out) {
-    unsigned char LS[1024]; // 충분한 크기로 설정해야 합니다.
-    unsigned char LappUuid[16];
-    unsigned char LauthUuid[16];
-    unsigned char LdeviceUuid[16];
-    unsigned char LXOR[16] = {0,};
-    unsigned char LTemp;
+void CreateAcccessKey16AsString(unsigned char* appUuid, unsigned char* authUuid, unsigned char* deviceUuid, unsigned char* out) {
+    AES128Key LappUuid;
+    AES128Key LauthUuid;
+    AES128Key LdeviceUuid;
+    AES128Key LXOR = {0,}; //단지 이거 하나 달라서 함수를 가르긴 했는데, 애초에 선언의 문제라 하나로 합치는것도 문제가 있긴 함
+    
 
-    printf("%d",strlen((char*)appUuid));
-    /* 모든 uuid의 길이는 16자리여야 진행 */
-    if (strlen((char*)appUuid) == 16 && strlen((char*)authUuid) == 16 && strlen((char*)deviceUuid) == 16) {
-        strcpy((char*)LappUuid, (char*)appUuid);
-        strcpy((char*)LauthUuid, (char*)authUuid);
-        strcpy((char*)LdeviceUuid, (char*)deviceUuid);
-
-        /*app, device는 >>로, auth는 역방향으로. 4byte씩 회전시킴. */
-        for (int i = 0; i < 4; i++) {
-            LTemp = LappUuid[i * 4];
-            LappUuid[i * 4] = LappUuid[i * 4 + 1];
-            LappUuid[i * 4 + 1] = LappUuid[i * 4 + 2];
-            LappUuid[i * 4 + 2] = LappUuid[i * 4 + 3];
-            LappUuid[i * 4 + 3] = LTemp;
-
-            LTemp = LdeviceUuid[i * 4];
-            LdeviceUuid[i * 4] = LdeviceUuid[i * 4 + 1];
-            LdeviceUuid[i * 4 + 1] = LdeviceUuid[i * 4 + 2];
-            LdeviceUuid[i * 4 + 2] = LdeviceUuid[i * 4 + 3];
-            LdeviceUuid[i * 4 + 3] = LTemp;
-
-            LTemp = LauthUuid[i * 4 + 3];
-            LauthUuid[i * 4 + 3] = LauthUuid[i * 4 + 2];
-            LauthUuid[i * 4 + 2] = LauthUuid[i * 4 + 1];
-            LauthUuid[i * 4 + 1] = LauthUuid[i * 4];
-            LauthUuid[i * 4] = LTemp;
-        }
-
-        /* auth와 app 상위, auth와 device 하위 8byte를 XOR 연산 */
-        for (int i = 0; i < 16; i++) {
-            if (i < 8) {
-                LXOR[i] = LappUuid[i] ^ LauthUuid[i];
-            } else {
-                LXOR[i] = LdeviceUuid[i] ^ LauthUuid[i];
-            }
-        }
-
-        // /* XOR 결과를 문자열로 변환 */
-        // for (int i = 0; i < 16; i++) {
-        //     sprintf(LS + strlen(LS), "%c", LXOR[i]);
-        // }
-
-        strcpy((char*)LXOR, (char*)out);
-    } else {
-        printf("UUID 형식이 16byte가 아닌 uuid가 존재합니다.");
+    /* 모든 uuid의 길이는 16자리여야 진행이나, uuid는 무조건 16자리가 들어온다고 가정하고 16자리로 강제 고정 */
+    bytescpy(LappUuid,appUuid, BaseLen);
+    bytescpy(LauthUuid,authUuid, BaseLen);
+    bytescpy(LdeviceUuid,deviceUuid, BaseLen);
+        
+    //BYTE ROTATE
+    for (int i = 0; i < 4; i++) {        
+        RRotateByte(LappUuid,i*4,4);
+        RRotateByte(LdeviceUuid,i*4,4);
+        LRotateByte(LauthUuid,i*4,4);        
     }
+    
+    /* auth와 app 상위, auth와 device 하위 16byte를 XOR 연산. 이것도 어떻게 함수화 해서 깔끔하게 한줄로 끝낼 수 있지 않을까? 깔끔한 구조가 생각이 안남 */
+    int MedValue = trunc(EncLen/2);
+    for (int i = 0; i < (EncLen) ; i++) {
+        if (i < MedValue) {
+            LXOR[i] = LappUuid[i] ^ LauthUuid[i];
+        } else {
+            LXOR[i] = LdeviceUuid[i-MedValue] ^ LauthUuid[i-MedValue];
+        }
+    }
+
+    bytescpy(out,LXOR,EncLen);
+}
+
+
+void CreateAcccessKey32AsString(unsigned char* appUuid, unsigned char* authUuid, unsigned char* deviceUuid, unsigned char* out) {
+    AES128Key LappUuid;
+    AES128Key LauthUuid;
+    AES128Key LdeviceUuid;
+    AES256Key LXOR = {0,};
+    
+
+    /* 모든 uuid의 길이는 16자리여야 진행이나, uuid는 무조건 16자리가 들어온다고 가정하고 16자리로 강제 고정 */
+    bytescpy(LappUuid,appUuid, BaseLen);
+    bytescpy(LauthUuid,authUuid, BaseLen);
+    bytescpy(LdeviceUuid,deviceUuid, BaseLen);
+        
+    //BYTE ROTATE
+    for (int i = 0; i < 4; i++) {        
+        RRotateByte(LappUuid,i*4,4);
+        RRotateByte(LdeviceUuid,i*4,4);
+        LRotateByte(LauthUuid,i*4,4);        
+    }
+    
+    /* auth와 app 상위, auth와 device 하위 16byte를 XOR 연산. 이것도 어떻게 함수화 해서 깔끔하게 한줄로 끝낼 수 있지 않을까? 깔끔한 구조가 생각이 안남 */
+    int MedValue = trunc(EncLen/2);
+    for (int i = 0; i < (EncLen) ; i++) {
+        if (i < MedValue) {
+            LXOR[i] = LappUuid[i] ^ LauthUuid[i];
+        } else {
+            LXOR[i] = LdeviceUuid[i-MedValue] ^ LauthUuid[i-MedValue];
+        }
+    }
+
+    bytescpy(out,LXOR,EncLen);
 }
