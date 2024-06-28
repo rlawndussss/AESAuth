@@ -25,11 +25,10 @@ int VerifyEncAndDecFunc(unsigned char* AppUUID, unsigned char* AuthUUID, unsigne
     scanf("%d",&L4digit);
 
     //Initial Access Key를 사용한 암,복호화    
-    LFuncRes = Set_AccessKey_Initial(L4digit, InitialKey);
-    if (LFuncRes  == KEYGEN_SUCCESS) {
-        printf("\r\n-------------------------------------------------------- using Initial Access Key --------------------------------------------------------\r\n");
-        printCaptionedByte("Calibrate Initial Access Key by 4digit Key ",  InitialKey, BaseLen);
-        printCaptionedByte("Span Round Key by Initial Access Key ", RoundKey_Initial, RoundLen);
+    LFuncRes = Set_AccessKey_Initial(L4digit);
+    printf("\r\n-------------------------------------------------------- using Initial Access Key --------------------------------------------------------\r\n");
+    if (LFuncRes  != KEYGEN_SUCCESS) {
+        exit;
     }
         printCaptionedByte("\r\nInput ",LStr, strlength);
 
@@ -62,10 +61,9 @@ int VerifyEncAndDecFunc(unsigned char* AppUUID, unsigned char* AuthUUID, unsigne
     printCaptionedByte("Auth   UUID ", AuthUUID, BaseLen);
     printCaptionedByte("Device UUID ", DeviceUUID, BaseLen);
 
-    LFuncRes = Set_AccessKey_Final(AppUUID, AuthUUID, DeviceUUID,FinalKey); //사실 Expansion 실패하면 그 뒤에단계 모두 동작하지 않게 만들어야 하므로, 지금 코드들도 틀린 코드이다. 
-    if (LFuncRes == KEYGEN_SUCCESS){
-        printCaptionedByte("Span Final Access Key by UUIDs ", FinalKey, EncLen);
-        printCaptionedByte("Span Round Key by Final Access Key ", RoundKey_Final, RoundLen);    
+    LFuncRes = Set_AccessKey_Final(AppUUID, AuthUUID, DeviceUUID); //사실 Expansion 실패하면 그 뒤에단계 모두 동작하지 않게 만들어야 하므로, 지금 코드들도 틀린 코드이다. 
+    if (LFuncRes != KEYGEN_SUCCESS){
+        exit;
     }
 
         // 비교를 위해 lstr 다시 초기화

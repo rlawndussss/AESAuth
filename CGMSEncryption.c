@@ -3,7 +3,7 @@
 //sdbiosensorcgms1의 16byte고정값에, 4자리 숫자 블록을 4byte단위 블록에 더하여 고정키를 생성
 // 초기값 73 64 62 69 6f 73 65 6e 73 6f 72 63 67 6d 73 31 
 // 7834 입력 시 예상되는 결과값 aa 9c 95 9d a6 ab 98 a2 aa a7 a5 97 9e a5 a6 65 
-int Set_AccessKey_Initial( int A4Digit, unsigned char AOut[] ){
+int Set_AccessKey_Initial( int A4Digit){
     int LRes = KEYGEN_FAIL;
     unsigned char pinchar[4]  = {0,};
     AES128Key keychar = {0x73, 0x64, 0x62, 0x69, 0x6f, 0x73, 0x65, 0x6e, 0x73, 0x6f, 0x72, 0x63, 0x67, 0x6D, 0x73, 0x31};     
@@ -21,7 +21,6 @@ int Set_AccessKey_Initial( int A4Digit, unsigned char AOut[] ){
     for(int i = 0; i<4; i++){
         for (int j = 0; j<4;j++){
             keychar[i*4+j] = defaultkey[i*4+j] + pinchar[j];
-            AOut[i*4+j] = keychar[i*4+j];
         }        
     }
 
@@ -30,7 +29,7 @@ int Set_AccessKey_Initial( int A4Digit, unsigned char AOut[] ){
     return LRes;
 }
 
-int Set_AccessKey_Final( unsigned char AappUuid[], unsigned char AauthUuid[], unsigned char AdeviceUuid[], unsigned char AOut[] ){    
+int Set_AccessKey_Final( unsigned char AappUuid[], unsigned char AauthUuid[], unsigned char AdeviceUuid[]){    
     AES256Key keychar = {0,};
     AES128Key LAppuuid;
     AES128Key LauthUuid;
@@ -41,14 +40,12 @@ int Set_AccessKey_Final( unsigned char AappUuid[], unsigned char AauthUuid[], un
     bytescpy(LauthUuid,AauthUuid, BaseLen);
     bytescpy(LdeviceUuid,AdeviceUuid, BaseLen);
     CreateAcccessKey32AsString(LAppuuid,LauthUuid,LdeviceUuid,keychar);
-
-    bytescpy(AOut, keychar,EncLen);
     KeyExpansion(keychar, RoundKey_Final); //전역변수가 pointer로 들어가 조정되어 나옴
 
     return KEYGEN_SUCCESS;
 }
 
-int Set_AccessKey_Temporar( unsigned char AappUuid[], unsigned char AauthUuid[], unsigned char AdeviceUuid[], unsigned char AOut[] ){
+int Set_AccessKey_Temporar( unsigned char AappUuid[], unsigned char AauthUuid[], unsigned char AdeviceUuid[]){
     AES256Key keychar = {0,};
     AES128Key LAppuuid;
     AES128Key LauthUuid;
@@ -59,12 +56,7 @@ int Set_AccessKey_Temporar( unsigned char AappUuid[], unsigned char AauthUuid[],
     bytescpy(LauthUuid,AauthUuid, BaseLen);
     bytescpy(LdeviceUuid,AdeviceUuid, BaseLen);
     CreateAcccessKey32AsString(LAppuuid,LauthUuid,LdeviceUuid,keychar);
-
-    bytescpy(AOut, keychar,EncLen);
     KeyExpansion(keychar, RoundKey_Temporary); //전역변수가 pointer로 들어가 조정되어 나옴
-
-    printCaptionedByte("Final Key ", AOut, EncLen);
-    printCaptionedByte("Round Key span by Final Key ", AOut, RoundLen);
 
     return KEYGEN_SUCCESS;
 }
