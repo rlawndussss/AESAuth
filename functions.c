@@ -66,3 +66,29 @@ int Multiply16(int ALen){
     LRes = LRes*BaseLen;
     return LRes;
 }
+
+// bool Packing(int cmd, char* inputdata, int inputLength, unsigned char **outputArray, int* outputLength){
+//     // int len = strlen(inputdata);
+//     // printf("%d  ",len);
+//     //16을 넣으니 20이 나오는걸 봐선 이 문제는 여전히 inputlength를 입력해야 안정적인것으로 보임
+//     int len = inputLength;
+//     int STX = 0x1A;
+//     int ETX = 0x1B;
+//     int checksum;
+//     unsigned char LPacked[inputLength + 5];    
+
+//     LPacked[0] = STX;
+//     LPacked[1] = (cmd % 256); // byte크기보다 큰 값이 들어오면 byte 이상 값은 버림
+//     LPacked[2] = inputLength; 
+   
+//     *outputArray = (unsigned char*)malloc(len* sizeof(unsigned char));
+//     *outputLength = len;
+//     memcpy(*outputArray, inputdata, len);
+//     return true;
+// }
+
+//     // char* strtest = "SDB5678A";
+//     // unsigned char* outputArray;
+//     // int outputLength = 0;
+
+//     // StringTobyte(strtest, &outputArray, &outputLength);

@@ -76,12 +76,12 @@ int Encrypt_Initial(unsigned char ADecryptData[], int AInLen, unsigned char AOut
     return LRes;
 }
 
-int Decrypt_Initial(unsigned char AEncryptData[], int AInLen, unsigned char AOut[], int AOutLen){
+int Decrypt_Initial(unsigned char AEncryptData[], int AInLen, unsigned char AOut[], int *AOutLen){
 
     int LRes;
     int LPaddingLen;
     bool LVerify;
-    if((AOutLen %BaseLen)==0) {   
+    if((AInLen %BaseLen)==0) {   
         Decrypt(RoundKey_Initial,AEncryptData,AOut);
         LPaddingLen = AOut[AInLen-1]; //복호화의 경우, In과 Out의 크기가 동일. 이는 out의 크기에 맞춰 암호화가 완료되어, 모든 byte array에 무언가의 값들이 존재하기 때문
         LVerify = true;
@@ -96,7 +96,9 @@ int Decrypt_Initial(unsigned char AEncryptData[], int AInLen, unsigned char AOut
                     for(int i = AInLen - LPaddingLen; i<AInLen; i++ ){ //검증이 완료된 이후에 출력된 데이터의 패딩을 제거. 미리 제거하면 아닐경우 데이터에 손상이 간다. 
                         AOut[i] = 0x00;
                 }
+                *AOutLen = LPaddingLen;
             }
+            
         }
         LRes = DECRYPT_SUCCESS;
     } else {
@@ -118,12 +120,12 @@ int Encrypt_Final(unsigned char ADecryptData[], int AInLen, unsigned char AOut[]
     return LRes;
 }
 
-int Decrypt_Final(unsigned char AEncryptData[], int AInLen, unsigned char AOut[], int AOutLen){
+int Decrypt_Final(unsigned char AEncryptData[], int AInLen, unsigned char AOut[], int *AOutLen){
 
     int LRes;
     int LPaddingLen;
     bool LVerify;
-    if((AOutLen %BaseLen)==0) {   
+    if((AInLen %BaseLen)==0) {   
         Decrypt(RoundKey_Final,AEncryptData,AOut);
         LPaddingLen = AOut[AInLen-1]; //복호화의 경우, In과 Out의 크기가 동일. 이는 out의 크기에 맞춰 암호화가 완료되어, 모든 byte array에 무언가의 값들이 존재하기 때문
         LVerify = true;
@@ -138,6 +140,7 @@ int Decrypt_Final(unsigned char AEncryptData[], int AInLen, unsigned char AOut[]
                     for(int i = AInLen - LPaddingLen; i<AInLen; i++ ){ //검증이 완료된 이후에 출력된 데이터의 패딩을 제거. 미리 제거하면 아닐경우 데이터에 손상이 간다. 
                         AOut[i] = 0x00;
                 }
+                *AOutLen = LPaddingLen;
             }
         }
         LRes = ENCRYPT_SUCCESS;
@@ -160,12 +163,12 @@ int Encrypt_Temporary(unsigned char ADecryptData[], int AInLen, unsigned char AO
     return LRes;
 }
 
-int Decrypt_Temporary(unsigned char AEncryptData[], int AInLen, unsigned char AOut[], int AOutLen){
+int Decrypt_Temporary(unsigned char AEncryptData[], int AInLen, unsigned char AOut[], int *AOutLen){
 
     int LRes;
     int LPaddingLen;
     bool LVerify;
-    if((AOutLen %BaseLen)==0) {   
+    if((AInLen %BaseLen)==0) {   
         Decrypt(RoundKey_Temporary,AEncryptData,AOut);
         LPaddingLen = AEncryptData[AInLen-1]; //복호화의 경우, In과 Out의 크기가 동일. 이는 out의 크기에 맞춰 암호화가 완료되어, 모든 byte array에 무언가의 값들이 존재하기 때문
         LVerify = true;
@@ -180,6 +183,7 @@ int Decrypt_Temporary(unsigned char AEncryptData[], int AInLen, unsigned char AO
                     for(int i = AInLen - LPaddingLen; i<AInLen; i++ ){ //검증이 완료된 이후에 출력된 데이터의 패딩을 제거. 미리 제거하면 아닐경우 데이터에 손상이 간다. 
                         AOut[i] = 0x00;
                 }
+                *AOutLen = LPaddingLen;
             }
         }
         LRes = ENCRYPT_SUCCESS;

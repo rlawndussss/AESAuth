@@ -7,6 +7,7 @@ int VerifyEncAndDecFunc(unsigned char* AppUUID, unsigned char* AuthUUID, unsigne
     int L4digit;
     int LLen[2] = {strlength, Multiply16(strlength)};//원래길이, 보정된 길이를 담은 길이 배열. enum이 된다면 enum으로 origin_len, calibrated_len으로 구분지었을것
     int LLen_Client;
+    int LLen_Client_Out;
     int LFuncRes;
 
     unsigned char LStr[ LLen[1] ];//보니깐 이상한 문자 들어가는건 여기서 32block으로 재산정을 해서 생긴 문젠듯. 그렇다면 초기화를 해 주던가 pkcs#7을 추가하던가 해서 해결해야지
@@ -50,9 +51,10 @@ int VerifyEncAndDecFunc(unsigned char* AppUUID, unsigned char* AuthUUID, unsigne
 
     // 다른 기기, 프로그램에서 받는다고 가정을 하면, 받은 패킷의 크기를 가져와 사용하는 형태가 되어야 할 듯 함. 이 역활을 하는게 LLen_Client
     LLen_Client = LLen[1]; //물론 패딩이 없는 원본데이터 크기가 올 수가 없으므로 이렇게 처리
-    LFuncRes = Decrypt_Initial(encrypted,LLen_Client, decrypted, LLen_Client);
+    LFuncRes = Decrypt_Initial(encrypted,LLen_Client, decrypted, &LLen_Client_Out);
     if (LFuncRes == DECRYPT_SUCCESS){
         printCaptionedByte("Decrypted ",decrypted, LLen[1]);
+        printf("Padding Length : %d\r\n",LLen_Client_Out);
     }
 
     //Final Access Key를 사용한 암,복호화
@@ -89,9 +91,10 @@ int VerifyEncAndDecFunc(unsigned char* AppUUID, unsigned char* AuthUUID, unsigne
 
     // 다른 기기, 프로그램에서 받는다고 가정을 하면, 받은 패킷의 크기를 가져와 사용하는 형태가 되어야 할 듯 함. 이 역활을 하는게 LLen_Client
     LLen_Client = LLen[1]; //물론 패딩이 없는 원본데이터 크기가 올 수가 없으므로 이렇게 처리
-    LFuncRes = Decrypt_Final(encrypted,LLen_Client, decrypted, LLen_Client);
+    LFuncRes = Decrypt_Final(encrypted,LLen_Client, decrypted, &LLen_Client_Out);
     if (LFuncRes == DECRYPT_SUCCESS){
         printCaptionedByte("Decrypted ",decrypted, LLen[1]);
+        printf("Padding Length : %d\r\n",LLen_Client_Out);
     }
 
     return 1;    
@@ -106,6 +109,9 @@ int main(void)
     unsigned char bytesforuuid1[20] = {0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40,};
     unsigned char bytesforuuid2[20] = {0x77, 0x78, 0x79, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x90, 0x91, 0x92,};
     unsigned char bytesforuuid3[20] = {0x11, 0x13, 0x15, 0x17, 0x19, 0x1B, 0x1D, 0x1F, 0x21, 0x23, 0x25, 0x27, 0x29, 0x2B, 0x2D, 0x2F,};
+
+    unsigned char* packet = NULL;
+    int packetlen = 0;
 
     AES128Key uuid1;
     AES128Key uuid2;
@@ -138,6 +144,9 @@ int main(void)
         case 2 :
             break;  
         case 3 : 
+            // StringTobyte(str, &packet, &packetlen);
+            // printCaptionedByte("test ", packet, packetlen);
+            // free(packet);
             break;
     
     default:
