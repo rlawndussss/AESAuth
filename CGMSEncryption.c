@@ -96,7 +96,7 @@ int Decrypt_Initial(unsigned char AEncryptData[], int AInLen, unsigned char AOut
                     for(int i = AInLen - LPaddingLen; i<AInLen; i++ ){ //검증이 완료된 이후에 출력된 데이터의 패딩을 제거. 미리 제거하면 아닐경우 데이터에 손상이 간다. 
                         AOut[i] = 0x00;
                 }
-                *AOutLen = LPaddingLen;
+                *AOutLen = AInLen - LPaddingLen;
             }
             
         }
@@ -140,7 +140,7 @@ int Decrypt_Final(unsigned char AEncryptData[], int AInLen, unsigned char AOut[]
                     for(int i = AInLen - LPaddingLen; i<AInLen; i++ ){ //검증이 완료된 이후에 출력된 데이터의 패딩을 제거. 미리 제거하면 아닐경우 데이터에 손상이 간다. 
                         AOut[i] = 0x00;
                 }
-                *AOutLen = LPaddingLen;
+                *AOutLen = AInLen - LPaddingLen;
             }
         }
         LRes = ENCRYPT_SUCCESS;
@@ -183,7 +183,7 @@ int Decrypt_Temporary(unsigned char AEncryptData[], int AInLen, unsigned char AO
                     for(int i = AInLen - LPaddingLen; i<AInLen; i++ ){ //검증이 완료된 이후에 출력된 데이터의 패딩을 제거. 미리 제거하면 아닐경우 데이터에 손상이 간다. 
                         AOut[i] = 0x00;
                 }
-                *AOutLen = LPaddingLen;
+                *AOutLen = AInLen - LPaddingLen;
             }
         }
         LRes = ENCRYPT_SUCCESS;
