@@ -40,13 +40,31 @@ unsigned char RoundKey_Initial[RoundLen];
 unsigned char RoundKey_Temporary[RoundLen];
 unsigned char RoundKey_Final[RoundLen];
 
+unsigned char AccessKey_Initial[EncLen];
+unsigned char AccessKey_Temporary[EncLen];
+unsigned char AccessKey_Final[EncLen];
+
 /*
     * 4Digit를 통해 인가용 Static Key 및 Round Key를 생성하는 Set_AccessKey_Initial
     * 16Byte의 UUID 3종을 통해 데이터 통신용 Static Key 및 Round Key를 생성하는 Set_AccessKey_Final
+    * Initial Key의 경우, AOS,IOS 변환 시, RoundKey의 17~32번째 주소 초기화 문제가 있어 AES128Key대신 AES256Key로 입출력을 시도. 
+    * unsigned char 대신 AES128Key, 256으로 정의된 Type을 사용하여 UUID 형태들의 입출력 길이를 제한 
 */
 int Set_AccessKey_Initial( int A4Digit);
-int Set_AccessKey_Temporar( unsigned char AappUuid[], unsigned char AauthUuid[], unsigned char AdeviceUuid[]);
-int Set_AccessKey_Final( unsigned char AappUuid[], unsigned char AauthUuid[], unsigned char AdeviceUuid[]); //Guest도 어짜피 Final Key고, 이를 별도로 구분하지 못하니 중간단계가 아닌 그냥 change final Key가 들어가야 함
+int Get_AccessKey_Initial(AES256Key AOutAccessKey);   
+int Init_AccessKey_Initial();
+bool IsExist_AccessKey_Initial();
+
+int Set_AccessKey_Temporary(AES128Key AappUuid, AES128Key AauthUuid, AES128Key AdeviceUuid);
+int Get_AccessKey_Temporary(AES256Key AOutAccessKey);
+int Init_AccessKey_Temporary();
+
+int Set_AccessKey_Final(AES128Key AappUuid, AES128Key AauthUuid, AES128Key AdeviceUuid); //Guest도 어짜피 Final Key고, 이를 별도로 구분하지 못하니 중간단계가 아닌 그냥 change final Key가 들어가야 함
+int Get_AccessKey_Final(AES256Key AOutAccessKey);
+int Init_AccessKey_Final();
+bool IsExist_AccessKey_Final();
+
+
 int Change_AccessKey_Final();
 
 /* 분류에 따라, 자신의 위치에서 암호화/복호화를 수행. 구조상 Round Key를 제외하곤 Initial, Final이 동일하나, 사용자 호출을 위해 둘을 분리 */

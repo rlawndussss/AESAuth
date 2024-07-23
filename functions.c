@@ -26,7 +26,7 @@ void printCaptionedByte(const unsigned char* caption, const unsigned char* bytes
     // unsigned char* nullChar = memchr(bytes, '\0', length);
     // size_t actualLength = nullChar ? (size_t)(nullChar - bytes) : length;
     // if (length > actualLength) { length = actualLength; }
-    printf("\r\n%s (Length : %d) -  ",caption, length);
+    printf("\r\n%s (Length : %d) -  ",caption, length);    
     for (size_t i = 0; i < length; ++i) {
         printf("%02x, ", bytes[i]);
     }
@@ -59,13 +59,30 @@ void LRotateByte(unsigned char* bytes, int start, size_t length){
 }
 
 int Multiply16(int ALen){
-    int LRes = ALen/BaseLen;
+    int LRes = (ALen)/BaseLen; //Padding Data길이
     if ((ALen%BaseLen) > 0){
         LRes++;
     }
     LRes = LRes*BaseLen;
     return LRes;
 }
+
+int EncryptLen(int ALen){
+    int LRes = (ALen+1)/BaseLen; //Padding Data길이
+    if (((ALen+1)%BaseLen) > 0){
+        LRes++;
+    }
+    LRes = LRes*BaseLen;
+    return LRes;
+}
+
+
+void RandomByteArray(unsigned char AOut[], int ALen){
+    for(int i = 0; i<ALen; i++){
+        AOut[i] = (rand() % 256);
+    }
+}
+
 
 // bool Packing(int cmd, char* inputdata, int inputLength, unsigned char **outputArray, int* outputLength){
 //     // int len = strlen(inputdata);

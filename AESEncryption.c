@@ -260,17 +260,19 @@ int Implement_Cipher(unsigned char * RoundKey, unsigned char * in, unsigned char
     return 1;
 }
 
-void Encrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out){
+void Encrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out, int len){
 
     int LLen=0;
     int LRewindCnt=0;
     int ibuf;
     
-    while ((in[LLen] != 0) && (in[LLen+1] != 0)){ LLen++; } //0이 연속적으로 나온다면 종료된 문자열. 이것도 크기 받아서 조정할 수 있지 않을까? 아니면 ciper에서 문제가 생기니 여기서 이렇게 거르는게 맞을까?
-    if(in[LLen] != 0){LLen++;}                              //(in[LLen+1] != 0) 조건으로 인해 줄어든 문자열 크기 보정.
-    if((LLen % 16) == 0){LRewindCnt = trunc(LLen/16); } else { LRewindCnt = trunc(LLen/16)+1; } 
+    // while ((in[LLen] != 0) && (in[LLen+1] != 0)){ LLen++; } //0이 연속적으로 나온다면 종료된 문자열. 이것도 크기 받아서 조정할 수 있지 않을까? 아니면 ciper에서 문제가 생기니 여기서 이렇게 거르는게 맞을까?
+    // if(in[LLen] != 0){LLen++;}                              //(in[LLen+1] != 0) 조건으로 인해 줄어든 문자열 크기 보정.
+    // if((LLen % 16) == 0){LRewindCnt = trunc(LLen/16); } else { LRewindCnt = trunc(LLen/16)+1; } 
     // unsigned char LOut[LRewindCnt*16]={0,};
 
+    //07-17변경
+    LRewindCnt = trunc(len/16);
     /*L16Buf를 16자리 block 분류를 위해 사용*/
     for(int i=0; i<LRewindCnt; i++){
 
@@ -283,17 +285,18 @@ void Encrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out){
     }
 }
 
-void Decrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out){
+void Decrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out, int len){
 
     int LLen=0;
     int LRewindCnt=0;
     int ibuf;
     
-    while ((in[LLen] != 0) && (in[LLen+1] != 0)){ LLen++; } //0이 연속적으로 나온다면 종료된 문자열
-    if(in[LLen] != 0){LLen++;}                              //(in[LLen+1] != 0) 조건으로 인해 줄어든 문자열 크기 보정.
-    if((LLen % 16) == 0){LRewindCnt = trunc(LLen/16); } else { LRewindCnt = trunc(LLen/16)+1; } 
+    // while ((in[LLen] != 0) && (in[LLen+1] != 0)){ LLen++; } //0이 연속적으로 나온다면 종료된 문자열. 이 부분이 문제가 된다. 길이를 받아서 수행하며, 길이 체크는 최종결과에서 수행하는게 맞다.
+    // if(in[LLen] != 0){LLen++;}                              //(in[LLen+1] != 0) 조건으로 인해 줄어든 문자열 크기 보정.
+    // if((LLen % 16) == 0){LRewindCnt = trunc(LLen/16); } else { LRewindCnt = trunc(LLen/16)+1; } 
     // unsigned char LOut[LRewindCnt*16]={0,};
-
+    // 07-17변경
+    LRewindCnt = trunc(len/16);
     /*L16Buf를 16자리 block 분류를 위해 사용*/
     for(int i=0; i<LRewindCnt; i++){
 
@@ -306,6 +309,11 @@ void Decrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out){
         //std::cout << "● Output : " << Lout16Buf << std::endl;
         for(int j=0; j<16; j++){ out[i*16 + j] = Lout16Buf[j]; } //16자리씩 끊어서 구분  
         //printBytes(out, LRewindCnt*16); /*debug code는 암호화 검증 시 사용 */
+
+        // printf("index : %d\r\n", i);
+        // printBytes(Lin16Buf,16);
+        // printBytes(Lout16Buf,16);
+        
     }
 }
 

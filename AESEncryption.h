@@ -92,20 +92,20 @@ static const unsigned char Rcon[256] =
 // #define Nr 10 /* Round Number */
 
 
-void SubBytes( unsigned char (*state)[4] );
-void InvSubBytes( unsigned char (*state)[4] );
-void ShiftRows( unsigned char (*state)[4] );
-void InvShiftRows( unsigned char (*state)[4] );
-void MixColumns( unsigned char (*state)[4] );
-void InvMixColumns( unsigned char (*state)[4] );
-void AddRoundKey(int round, unsigned char* RoundKey, unsigned char (*state)[4]);
-void KeyExpansion(unsigned char* key, unsigned char* RoundKey);
-int Implement_Cipher(unsigned char* RoundKey, unsigned char * in, unsigned char * out, bool mSwitch);
-void Encrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out);
-void Decrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out);
-void PINtoByte(int pin, unsigned char pinchar[]);
-void CreateAcccessKey16AsString( unsigned char*  appUuid, unsigned char*  authUuid, unsigned char*  deviceUuid, unsigned char* out ); 
-void CreateAcccessKey32AsString( unsigned char*  appUuid, unsigned char*  authUuid, unsigned char*  deviceUuid, unsigned char* out ); 
+void SubBytes( unsigned char (*state)[4] );     //16byte로 가정
+void InvSubBytes( unsigned char (*state)[4] );  //16byte로 가정
+void ShiftRows( unsigned char (*state)[4] );    //16byte로 가정
+void InvShiftRows( unsigned char (*state)[4] ); //16byte로 가정
+void MixColumns( unsigned char (*state)[4] );   //16byte로 가정
+void InvMixColumns( unsigned char (*state)[4] );//16byte로 가정
+void AddRoundKey(int round, unsigned char* RoundKey, unsigned char (*state)[4]);    //240byte로 가정
+void KeyExpansion(unsigned char* key, unsigned char* RoundKey);                     //240byte로 가정
+int Implement_Cipher(unsigned char* RoundKey, unsigned char * in, unsigned char * out, bool mSwitch); //이쪽도 확인 필요
+void Encrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out, int len);   //길이가 고정되지 않아 수정. 07-17변경
+void Decrypt(unsigned char * RoundKey, unsigned char * in, unsigned char * out, int len);   //길이가 고정되지 않아 수정. 07-17변경
+void PINtoByte(int pin, unsigned char pinchar[]);   // 4자리 고정
+void CreateAcccessKey16AsString( unsigned char*  appUuid, unsigned char*  authUuid, unsigned char*  deviceUuid, unsigned char* out ); //16byte로 가정
+void CreateAcccessKey32AsString( unsigned char*  appUuid, unsigned char*  authUuid, unsigned char*  deviceUuid, unsigned char* out ); //32byte로 가정
 
 
 #endif
